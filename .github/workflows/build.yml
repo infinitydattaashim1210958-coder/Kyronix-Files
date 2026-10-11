@@ -1,0 +1,222 @@
+name: Kyronix Files — Build & Release
+
+# ── Trigger rules ──────────────────────────────────────────────────────────────
+#
+# • Every push to main / develop  →  debug APK (smoke-test the build)
+# • Every pull request to main    →  debug APK (CI gate)
+# • Tag  v*.*.*                   →  signed release APK + AAB + GitHub Release
+#
+on:
+  push:
+    branches: [ main, develop ]
+    tags:     [ 'v*.*.*' ]
+  pull_request:
+    branches: [ main ]
+
+# Cancel a superseded run on the same branch/PR to save minutes
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+# ── Shared env ────────────────────────────────────────────────────────────────
+env:
+  JAVA_VERSION:      '17'
+  JAVA_DISTRIBUTION: 'temurin'        # Eclipse Temurin — fastest on GitHub runners
+  GRADLE_VERSION:    '8.9'            # matches the wrapper (see gradle/wrapper)
+  AGP_VERSION:       '8.7.1'          # Android Gradle Plugin (matches build.gradle)
+
+jobs:
+
+  # ────────────────────────────────────────────────────────────────────────────
+  # JOB 1 — Debug build (every push / PR)
+  # ────────────────────────────────────────────────────────────────────────────
+  build-debug:
+    name: Build Debug APK
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1. Checkout
+      - name: Checkout source
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0   # full history so git describe works for version names
+
+      # 2. Java
+      - name: Set up JDK ${{ env.JAVA_VERSION }}
+        uses: actions/setup-java@v4
+        with:
+          java-version:  ${{ env.JAVA_VERSION }}
+          distribution:  ${{ env.JAVA_DISTRIBUTION }}
+          cache:         gradle
+
+      # 3. Gradle wrapper permission (required on Linux runners)
+      - name: Make gradlew executable
+        run: chmod +x ./gradlew
+
+      # 4. Gradle cache — dramatically cuts build time on repeat runs
+      - name: Cache Gradle packages
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: gradle-${{ runner.os }}-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties', 'gradle.properties') }}
+          restore-keys: |
+            gradle-${{ runner.os }}-
+
+      # 5. Build
+      - name: Build debug APK
+        run: ./gradlew assembleDebug --no-daemon --stacktrace
+        env:
+          GRADLE_OPTS: "-Dorg.gradle.jvmargs=-Xmx2g -Dorg.gradle.daemon=false"
+
+      # 6. Run unit tests
+      - name: Run unit tests
+        run: ./gradlew testDebugUnitTest --no-daemon
+
+      # 7. Upload debug APK as workflow artifact (visible in Actions tab)
+      - name: Upload debug APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: kyronix-files-debug-${{ github.run_number }}
+          path: app/build/outputs/apk/debug/**.apk
+          retention-days: 14   # keep for 2 weeks
+
+      # 8. Upload test results
+      - name: Upload test results
+        if: always()   # upload even on test failure so you can inspect
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results-${{ github.run_number }}
+          path: app/build/reports/tests/
+          retention-days: 7
+
+
+  # ────────────────────────────────────────────────────────────────────────────
+  # JOB 2 — Signed release (tags v*.*.* only)
+  # ────────────────────────────────────────────────────────────────────────────
+  build-release:
+    name: Build Signed Release APK + AAB
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: build-debug    # only run if debug build passed
+
+    steps:
+      # 1. Checkout
+      - name: Checkout source
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      # 2. Java
+      - name: Set up JDK ${{ env.JAVA_VERSION }}
+        uses: actions/setup-java@v4
+        with:
+          java-version:  ${{ env.JAVA_VERSION }}
+          distribution:  ${{ env.JAVA_DISTRIBUTION }}
+          cache:         gradle
+
+      # 3. Gradle wrapper permission
+      - name: Make gradlew executable
+        run: chmod +x ./gradlew
+
+      # 4. Gradle cache
+      - name: Cache Gradle packages
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: gradle-${{ runner.os }}-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties', 'gradle.properties') }}
+          restore-keys: |
+            gradle-${{ runner.os }}-
+
+      # 5. Decode keystore from GitHub Secret (base64-encoded .jks)
+      #    → Go to repo Settings → Secrets → Actions and add:
+      #       KEYSTORE_BASE64     : base64 of your .jks file
+      #                             (run: base64 -w0 your-key.jks | pbcopy)
+      #       KEY_STORE_PASSWORD  : storePassword
+      #       KEY_ALIAS           : keyAlias
+      #       KEY_PASSWORD        : keyPassword
+      - name: Decode keystore
+        run: |
+          echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 --decode > $GITHUB_WORKSPACE/kyronix-release.jks
+          echo "KEYSTORE_PATH=$GITHUB_WORKSPACE/kyronix-release.jks" >> $GITHUB_ENV
+
+      # 6. Extract tag version (v1.2.3 → 1.2.3) for APK naming
+      - name: Extract version from tag
+        id: version
+        run: echo "VERSION=${GITHUB_REF_NAME#v}" >> $GITHUB_OUTPUT
+
+      # 7. Build signed release APK
+      - name: Build release APK
+        run: |
+          ./gradlew assembleRelease \
+            --no-daemon \
+            --stacktrace \
+            -Pandroid.injected.signing.store.file=${{ env.KEYSTORE_PATH }} \
+            -Pandroid.injected.signing.store.password=${{ secrets.KEY_STORE_PASSWORD }} \
+            -Pandroid.injected.signing.key.alias=${{ secrets.KEY_ALIAS }} \
+            -Pandroid.injected.signing.key.password=${{ secrets.KEY_PASSWORD }}
+        env:
+          GRADLE_OPTS: "-Dorg.gradle.jvmargs=-Xmx2g -Dorg.gradle.daemon=false"
+
+      # 8. Build signed release AAB (for Play Store)
+      - name: Build release AAB
+        run: |
+          ./gradlew bundleRelease \
+            --no-daemon \
+            -Pandroid.injected.signing.store.file=${{ env.KEYSTORE_PATH }} \
+            -Pandroid.injected.signing.store.password=${{ secrets.KEY_STORE_PASSWORD }} \
+            -Pandroid.injected.signing.key.alias=${{ secrets.KEY_ALIAS }} \
+            -Pandroid.injected.signing.key.password=${{ secrets.KEY_PASSWORD }}
+
+      # 9. Rename outputs to include version tag
+      - name: Rename artifacts
+        run: |
+          VERSION=${{ steps.version.outputs.VERSION }}
+          mv app/build/outputs/apk/release/app-release.apk \
+             app/build/outputs/apk/release/kyronix-files-$VERSION.apk
+          mv app/build/outputs/bundle/release/app-release.aab \
+             app/build/outputs/bundle/release/kyronix-files-$VERSION.aab
+
+      # 10. Upload to Actions artifacts
+      - name: Upload release APK artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: kyronix-files-release-${{ steps.version.outputs.VERSION }}
+          path: |
+            app/build/outputs/apk/release/kyronix-files-*.apk
+            app/build/outputs/bundle/release/kyronix-files-*.aab
+          retention-days: 90
+
+      # 11. Create GitHub Release and attach APK + AAB
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          name: "Kyronix Files ${{ github.ref_name }}"
+          body: |
+            ## Kyronix Files ${{ github.ref_name }}
+
+            ### Downloads
+            - **APK** — install directly on any Android device (sideload)
+            - **AAB** — for Play Store upload
+
+            ### What's new
+            See [CHANGELOG.md](CHANGELOG.md) for details.
+
+            ### Compatibility
+            - Android 5.0+ (API 21)
+            - Tested on Samsung (One UI), MIUI HyperOS (Redmi Note 14), stock AOSP
+          files: |
+            app/build/outputs/apk/release/kyronix-files-*.apk
+            app/build/outputs/bundle/release/kyronix-files-*.aab
+          draft: false
+          prerelease: ${{ contains(github.ref_name, '-alpha') || contains(github.ref_name, '-beta') || contains(github.ref_name, '-rc') }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      # 12. Wipe keystore from runner disk
+      - name: Clean up keystore
+        if: always()
+        run: rm -f ${{ env.KEYSTORE_PATH }}
