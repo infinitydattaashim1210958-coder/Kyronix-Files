@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    package="com.kyronix.files">
+
+    <!-- ─── Storage permissions ──────────────────────────────────────────────
+         Android 13+ (API 33): use granular READ_MEDIA_* instead of READ_EXTERNAL_STORAGE
+         Android 11-12 (API 30-32): MANAGE_EXTERNAL_STORAGE for full access (requested at runtime)
+         Android 6-10 (API 23-29): READ/WRITE_EXTERNAL_STORAGE
+         All are declared here; runtime checks gate actual use.
+    ──────────────────────────────────────────────────────────────────────── -->
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"
+        android:maxSdkVersion="32" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"
+        android:maxSdkVersion="29" />
+    <!-- API 33+ granular media permissions -->
+    <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
+    <uses-permission android:name="android.permission.READ_MEDIA_VIDEO" />
+    <uses-permission android:name="android.permission.READ_MEDIA_AUDIO" />
+    <!-- API 34+: allow reading images/video with user-selected-only subset -->
+    <uses-permission android:name="android.permission.READ_MEDIA_VISUAL_USER_SELECTED" />
+    <!-- Full filesystem access (API 30+); requested at runtime via Settings intent -->
+    <uses-permission android:name="android.permission.MANAGE_EXTERNAL_STORAGE"
+        tools:ignore="ScopedStorage" />
+
+    <!-- Network state (for future cloud/network features) -->
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+
+    <!-- Install packages — needed to open APK files -->
+    <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
+
+    <!-- Vibrate for haptic feedback on long-press -->
+    <uses-permission android:name="android.permission.VIBRATE" />
+
+    <!-- MIUI HyperOS: declare we don't need background processes to start -->
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"
+        tools:ignore="ProtectedPermissions" />
+
+    <application
+        android:name=".KyronixApp"
+        android:allowBackup="false"
+        android:hardwareAccelerated="true"
+        android:icon="@mipmap/ic_launcher"
+        android:label="@string/app_name"
+        android:requestLegacyExternalStorage="true"
+        android:roundIcon="@mipmap/ic_launcher"
+        android:supportsRtl="true"
+        android:theme="@style/Theme.Kyronix"
+        android:usesCleartextTraffic="false"
+        tools:targetApi="31">
+
+        <!-- ── Main Activity ─────────────────────────────────────────────── -->
+        <activity
+            android:name=".MainActivity"
+            android:configChanges="orientation|screenSize|screenLayout|keyboardHidden|smallestScreenSize"
+            android:exported="true"
+            android:launchMode="singleTask"
+            android:windowSoftInputMode="adjustResize">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+            <!-- Open file manager from other apps -->
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <data android:scheme="file" />
+                <data android:mimeType="*/*" />
+            </intent-filter>
+        </activity>
+
+        <!-- ── File Provider — required for sharing files on API 24+ ──── -->
+        <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="${applicationId}.fileprovider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/file_provider_paths" />
+        </provider>
+
+    </application>
+</manifest>
