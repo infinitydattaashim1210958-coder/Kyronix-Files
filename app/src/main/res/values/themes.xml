@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    themes.xml
+    Uses Material3 (Material You) base. No Samsung-specific or MIUI-specific
+    window attributes — those are set programmatically in MainActivity to avoid
+    AttributeNotFoundException on non-OEM ROMs (the crash Samsung's titleCentered
+    caused on MIUI).
+-->
+<resources>
+    <!-- Base application theme -->
+    <style name="Theme.Kyronix" parent="Theme.Material3.DayNight.NoActionBar">
+
+        <!-- Brand colours wired into M3 colour roles -->
+        <item name="colorPrimary">@color/brand_primary</item>
+        <item name="colorPrimaryDark">@color/brand_primary_dark</item>
+        <item name="colorPrimaryVariant">@color/brand_primary_light</item>
+        <item name="colorSecondary">@color/accent_primary</item>
+        <item name="colorSecondaryVariant">@color/accent_dark</item>
+        <item name="colorSurface">@color/surface</item>
+        <item name="colorSurfaceVariant">@color/surface_variant</item>
+        <item name="android:colorBackground">@color/background</item>
+        <item name="colorOnSurface">@color/on_surface</item>
+        <item name="colorOnSurfaceVariant">@color/on_surface_variant</item>
+
+        <!-- Status bar transparent; drawn over by window -->
+        <item name="android:statusBarColor">@android:color/transparent</item>
+        <item name="android:navigationBarColor">@android:color/transparent</item>
+        <!-- Light status-bar icons on dark primary -->
+        <item name="android:windowLightStatusBar">false</item>
+
+        <!-- Toolbar -->
+        <item name="toolbarStyle">@style/Widget.Kyronix.Toolbar</item>
+
+        <!-- No splash / start activity flicker -->
+        <item name="android:windowBackground">@color/background</item>
+    </style>
+
+    <!-- Toolbar — standard Material3, no OEM attrs -->
+    <style name="Widget.Kyronix.Toolbar" parent="Widget.Material3.Toolbar.Surface">
+        <item name="android:elevation">4dp</item>
+        <item name="contentInsetStartWithNavigation">0dp</item>
+    </style>
+
+    <!-- Splash theme (shown before setContentView) -->
+    <style name="Theme.Kyronix.Splash" parent="Theme.Kyronix">
+        <item name="android:windowBackground">@color/brand_primary</item>
+    </style>
+
+    <!-- Dialog -->
+    <style name="Theme.Kyronix.Dialog" parent="ThemeOverlay.Material3.Dialog.Alert" />
+
+</resources>

@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <dimen name="dialog_padding">20dp</dimen>
+    <dimen name="list_item_height">72dp</dimen>
+    <dimen name="icon_size_list">44dp</dimen>
+    <dimen name="icon_size_grid">60dp</dimen>
+    <dimen name="breadcrumb_height">40dp</dimen>
+    <dimen name="bottom_nav_height">64dp</dimen>
+    <dimen name="recycler_bottom_padding">80dp</dimen>
+</resources>

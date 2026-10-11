@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Kyronix Files</string>
+
+    <!-- Bottom nav labels -->
+    <string name="label_recent">Recent</string>
+    <string name="label_internal">Internal Storage</string>
+    <string name="label_sd">SD Card</string>
+    <string name="label_downloads">Downloads</string>
+    <string name="label_no_sd">No SD card found</string>
+    <string name="label_recent_coming_soon">Recent files — coming soon</string>
+
+    <!-- Toolbar / menu -->
+    <string name="search_hint">Search files…</string>
+    <string name="action_sort">Sort by</string>
+    <string name="action_toggle_view">Toggle view</string>
+    <string name="action_show_hidden">Show hidden files</string>
+    <string name="action_open_with">Open with</string>
+    <string name="action_share">Share</string>
+    <string name="action_rename">Rename</string>
+    <string name="action_delete">Delete</string>
+    <string name="action_properties">Properties</string>
+
+    <!-- Sort options -->
+    <string name="sort_name_asc">Name (A → Z)</string>
+    <string name="sort_name_desc">Name (Z → A)</string>
+    <string name="sort_date_asc">Date (oldest first)</string>
+    <string name="sort_date_desc">Date (newest first)</string>
+    <string name="sort_size_asc">Size (smallest first)</string>
+    <string name="sort_size_desc">Size (largest first)</string>
+
+    <!-- Permission screen -->
+    <string name="permission_required_title">Storage access needed</string>
+    <string name="btn_grant">Grant permission</string>
+
+    <!-- Dialogs -->
+    <string name="btn_rename">Rename</string>
+    <string name="btn_delete">Delete</string>
+    <string name="confirm_delete">Delete \"%1$s\"? This cannot be undone.</string>
+
+    <!-- Selection -->
+    <string name="selection_count">%1$d selected</string>
+
+    <!-- Empty state -->
+    <string name="empty_folder">This folder is empty</string>
+
+    <!-- Errors -->
+    <string name="error_storage_unavailable">Storage not available. Please check your device.</string>
+    <string name="error_cannot_open">Cannot open this file.</string>
+    <string name="error_cannot_share">Cannot share this file.</string>
+    <string name="error_no_app">No app found to open this file.</string>
+    <string name="error_file_exists">A file with that name already exists.</string>
+    <string name="error_rename_failed">Rename failed. Check storage permissions.</string>
+    <string name="error_delete_failed">Delete failed. Check storage permissions.</string>
+    <string name="error_generic">Something went wrong. Please try again.</string>
+
+    <!-- Accessibility -->
+    <string name="desc_file_options">File options</string>
+</resources>
