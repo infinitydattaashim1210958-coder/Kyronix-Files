@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Background drawable for file list/grid items.
+    activated=true → selection tint; normal → transparent with ripple.
+-->
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:state_activated="true">
+        <color android:color="@color/selection_bg" />
+    </item>
+    <item>
+        <!-- Default: ripple on tap -->
+        <ripple xmlns:android="http://schemas.android.com/apk/res/android"
+            android:color="?attr/colorControlHighlight">
+            <item android:drawable="@android:color/transparent" />
+        </ripple>
+    </item>
+</selector>

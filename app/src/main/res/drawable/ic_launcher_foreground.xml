@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Adaptive icon foreground — "K" letterform for Kyronix.
+    108dp viewport as required by adaptive icon spec.
+    Safe zone is the central 72dp circle; all paths stay within it.
+-->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp" android:height="108dp"
+    android:viewportWidth="108" android:viewportHeight="108">
+
+    <!-- Outer folder shape (brand identity) -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="
+          M54,28 L38,28 C35.8,28 34,29.8 34,32 L34,76
+          C34,78.2 35.8,80 38,80 L70,80
+          C72.2,80 74,78.2 74,76 L74,38
+          L62,28 Z" />
+
+    <!-- Dog-ear fold -->
+    <path
+        android:fillColor="#B0BEC5"
+        android:pathData="M62,28 L62,38 L74,38 Z" />
+
+    <!-- "K" letter centred in the icon -->
+    <path
+        android:fillColor="@color/brand_primary"
+        android:pathData="
+          M44,45 L44,65
+          M44,55 L56,45
+          M50,51 L56,65" />
+
+    <!-- Render the K with stroke width via thick filled paths -->
+    <path
+        android:fillColor="@color/brand_primary"
+        android:pathData="M43,44 L47,44 L47,66 L43,66 Z" />
+    <path
+        android:fillColor="@color/brand_primary"
+        android:pathData="M43,53 L57,43 L59.5,46.5 L47,55.5 Z" />
+    <path
+        android:fillColor="@color/brand_primary"
+        android:pathData="M47,54 L59.5,63.5 L57,67 L43,57 Z" />
+
+</vector>
