@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    FileProvider paths.
+    Covers every storage root Kyronix Files can navigate to:
+    - internal external storage (/sdcard, /storage/emulated/0)
+    - secondary volumes (SD cards, /storage/<volume>/)
+    - app-private cache/files (future: temp files for share operations)
+
+    MIUI HyperOS note: do NOT use <root-path path="." /> — MIUI's
+    FileProvider verifier rejects it on some HyperOS builds with a
+    SecurityException even though it is valid per AOSP. Use named
+    paths for each root instead.
+-->
+<paths xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!-- /storage/emulated/0/... (primary external storage) -->
+    <external-path
+        name="external_storage_root"
+        path="." />
+
+    <!-- /storage/<volume>/... (SD cards, secondary volumes) -->
+    <external-path
+        name="external_volume_root"
+        path="../" />
+
+    <!-- App-private files (e.g. temp copies for sharing) -->
+    <files-path
+        name="app_files"
+        path="." />
+
+    <!-- App cache (temp files) -->
+    <cache-path
+        name="app_cache"
+        path="." />
+
+</paths>
