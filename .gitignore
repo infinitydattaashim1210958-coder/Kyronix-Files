@@ -1,2 +1,45 @@
-# Google App Engine generated folder
-appengine-generated/
+# ── Gradle build outputs ──────────────────────────────────────────────────────
+.gradle/
+build/
+app/build/
+
+# ── Android Studio / IntelliJ ─────────────────────────────────────────────────
+*.iml
+.idea/
+.idea/caches/
+.idea/libraries/
+.idea/modules.xml
+.idea/workspace.xml
+.idea/navEditor.xml
+.idea/assetWizardSettings.xml
+.DS_Store
+/captures
+.externalNativeBuild/
+.cxx/
+local.properties
+
+# ── Keystore files — NEVER commit these ───────────────────────────────────────
+*.jks
+*.keystore
+*.p12
+*.pfx
+release-key.*
+kyronix-release.*
+
+# ── Generated BuildConfig (AGP generates this at build time) ──────────────────
+# Our stub BuildConfig.kt is committed; the generated one lives in build/
+app/src/main/kotlin/com/kyronix/files/BuildConfig.kt
+
+# ── Proguard mapping (regenerated each release build) ────────────────────────
+app/build/outputs/mapping/
+
+# ── Test results ──────────────────────────────────────────────────────────────
+app/build/reports/
+
+# ── macOS / Windows artifacts ─────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ── Node (if you add any JS tooling later) ───────────────────────────────────
+node_modules/
